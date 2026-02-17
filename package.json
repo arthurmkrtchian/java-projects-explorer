@@ -1,0 +1,301 @@
+{
+  "name": "java-projects-explorer",
+  "displayName": "Java Explorer",
+  "description": "A lightweight Java project explorer with IntelliJ-like compact folder view, auto-reveal, and quick Java file creation.",
+  "version": "1.0.0",
+  "publisher": "ArthurMkrtchian",
+  "author": "Mkrtchian Arthur",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArthurMkrtchian/java-projects-explorer"
+  },
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onView:javaProjectsExplorer"
+  ],
+  "contributes": {
+    "configuration": {
+      "title": "Java Explorer",
+      "properties": {
+        "java-projects-explorer.autoReveal": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically reveal the active file in the Java Explorer tree view."
+        }
+      }
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "javaProjectsExplorer",
+          "name": "Java Explorer",
+          "canSelectMany": true,
+          "dragAndDrop": true
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "java-projects-explorer.newSubmenu",
+        "label": "New",
+        "icon": "$(plus)"
+      },
+      {
+        "id": "java-projects-explorer.copySubmenu",
+        "label": "Copy Path"
+      }
+    ],
+    "commands": [
+      {
+        "command": "java-projects-explorer.createClass",
+        "title": "Java Class",
+        "icon": "$(symbol-class)"
+      },
+      {
+        "command": "java-projects-explorer.createInterface",
+        "title": "Interface",
+        "icon": "$(symbol-interface)"
+      },
+      {
+        "command": "java-projects-explorer.createEnum",
+        "title": "Enum",
+        "icon": "$(symbol-enum)"
+      },
+      {
+        "command": "java-projects-explorer.createAnnotation",
+        "title": "Annotation",
+        "icon": "$(symbol-method)"
+      },
+      {
+        "command": "java-projects-explorer.createController",
+        "title": "Spring Controller",
+        "icon": "$(symbol-interface)"
+      },
+      {
+        "command": "java-projects-explorer.createService",
+        "title": "Spring Service",
+        "icon": "$(symbol-class)"
+      },
+      {
+        "command": "java-projects-explorer.createRepository",
+        "title": "Spring Repository",
+        "icon": "$(symbol-class)"
+      },
+      {
+        "command": "java-projects-explorer.createFile",
+        "title": "File",
+        "icon": "$(file)"
+      },
+      {
+        "command": "java-projects-explorer.createFolder",
+        "title": "Directory",
+        "icon": "$(folder)"
+      },
+      {
+        "command": "java-projects-explorer.rename",
+        "title": "Rename...",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "java-projects-explorer.copy",
+        "title": "Copy",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "java-projects-explorer.cut",
+        "title": "Cut",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "java-projects-explorer.paste",
+        "title": "Paste",
+        "icon": "$(replace)"
+      },
+      {
+        "command": "java-projects-explorer.deleteItem",
+        "title": "Delete",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "java-projects-explorer.copyAbsPath",
+        "title": "Absolute Path"
+      },
+      {
+        "command": "java-projects-explorer.copyRelPath",
+        "title": "Relative Path"
+      },
+      {
+        "command": "java-projects-explorer.openTerminal",
+        "title": "Open in Terminal",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "java-projects-explorer.revealInOS",
+        "title": "Reveal in File Explorer",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "java-projects-explorer.revealCurrentFile",
+        "title": "Select Opened File",
+        "icon": "$(target)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "java-projects-explorer.copy",
+        "key": "ctrl+c",
+        "when": "focusedView == javaProjectsExplorer && !inputFocus"
+      },
+      {
+        "command": "java-projects-explorer.cut",
+        "key": "ctrl+x",
+        "when": "focusedView == javaProjectsExplorer && !inputFocus"
+      },
+      {
+        "command": "java-projects-explorer.paste",
+        "key": "ctrl+v",
+        "when": "focusedView == javaProjectsExplorer && !inputFocus"
+      },
+      {
+        "command": "java-projects-explorer.deleteItem",
+        "key": "delete",
+        "when": "focusedView == javaProjectsExplorer && !inputFocus"
+      },
+      {
+        "command": "java-projects-explorer.rename",
+        "key": "f2",
+        "when": "focusedView == javaProjectsExplorer && !inputFocus"
+      }
+    ],
+    "menus": {
+      "view/item/context": [
+        {
+          "submenu": "java-projects-explorer.newSubmenu",
+          "when": "view == javaProjectsExplorer && viewItem =~ /folder|rootFolder|file/",
+          "group": "1_new"
+        },
+        {
+          "command": "java-projects-explorer.rename",
+          "when": "view == javaProjectsExplorer && viewItem != rootFolder",
+          "group": "2_edit@1"
+        },
+        {
+          "command": "java-projects-explorer.copy",
+          "when": "view == javaProjectsExplorer && viewItem != rootFolder",
+          "group": "2_edit@2"
+        },
+        {
+          "submenu": "java-projects-explorer.copySubmenu",
+          "when": "view == javaProjectsExplorer",
+          "group": "2_edit@3"
+        },
+        {
+          "command": "java-projects-explorer.paste",
+          "when": "view == javaProjectsExplorer && viewItem =~ /folder|rootFolder/",
+          "group": "2_edit@4"
+        },
+        {
+          "command": "java-projects-explorer.cut",
+          "when": "view == javaProjectsExplorer && viewItem != rootFolder",
+          "group": "2_edit@5"
+        },
+        {
+          "command": "java-projects-explorer.deleteItem",
+          "when": "view == javaProjectsExplorer && viewItem != rootFolder",
+          "group": "2_edit@6"
+        },
+        {
+          "command": "java-projects-explorer.openTerminal",
+          "when": "view == javaProjectsExplorer && viewItem =~ /folder|rootFolder/",
+          "group": "3_system@1"
+        },
+        {
+          "command": "java-projects-explorer.revealInOS",
+          "when": "view == javaProjectsExplorer",
+          "group": "3_system@2"
+        }
+      ],
+      "java-projects-explorer.newSubmenu": [
+        {
+          "command": "java-projects-explorer.createClass",
+          "group": "1_java"
+        },
+        {
+          "command": "java-projects-explorer.createInterface",
+          "group": "1_java"
+        },
+        {
+          "command": "java-projects-explorer.createEnum",
+          "group": "1_java"
+        },
+        {
+          "command": "java-projects-explorer.createAnnotation",
+          "group": "1_java"
+        },
+        {
+          "command": "java-projects-explorer.createController",
+          "group": "2_spring"
+        },
+        {
+          "command": "java-projects-explorer.createService",
+          "group": "2_spring"
+        },
+        {
+          "command": "java-projects-explorer.createRepository",
+          "group": "2_spring"
+        },
+        {
+          "command": "java-projects-explorer.createFile",
+          "group": "3_common"
+        },
+        {
+          "command": "java-projects-explorer.createFolder",
+          "group": "3_common"
+        }
+      ],
+      "java-projects-explorer.copySubmenu": [
+        {
+          "command": "java-projects-explorer.copyAbsPath"
+        },
+        {
+          "command": "java-projects-explorer.copyRelPath"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "java-projects-explorer.revealCurrentFile",
+          "when": "view == javaProjectsExplorer",
+          "group": "navigation@0"
+        },
+        {
+          "submenu": "java-projects-explorer.newSubmenu",
+          "when": "view == javaProjectsExplorer",
+          "group": "navigation@1"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@types/vscode": "^1.90.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.39.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.1"
+  }
+}
