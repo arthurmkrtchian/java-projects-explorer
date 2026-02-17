@@ -80,37 +80,73 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
         const currentPath = element.fsPath;
         if (!fs.existsSync(currentPath)) { return []; }
 
-        const items = fs.readdirSync(currentPath);
+        let items: string[] = [];
+        try {
+            items = fs.readdirSync(currentPath);
+        } catch (e) {
+            console.error(`[ERROR] Failed to read directory ${currentPath}:`, e);
+            return [];
+        }
+
         const result: ProjectItem[] = [];
 
         for (const item of items) {
             const fullPath = path.join(currentPath, item);
-            const stat = fs.lstatSync(fullPath);
+            try {
+                const stat = fs.lstatSync(fullPath);
 
-            if (stat.isDirectory()) {
-                const compacted = this.getCompactedFolder(fullPath);
-                const hasContent = fs.readdirSync(compacted.path).length > 0;
-                result.push(new ProjectItem(
-                    compacted.label,
-                    compacted.path,
-                    hasContent ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
-                    true
-                ));
-            } else {
-                result.push(new ProjectItem(item, fullPath, vscode.TreeItemCollapsibleState.None, false));
+                if (stat.isDirectory()) {
+                    const compacted = this.getCompactedFolder(fullPath);
+                    let hasContent = false;
+                    try {
+                        hasContent = fs.readdirSync(compacted.path).length > 0;
+                    } catch {
+                        // If we can't read contents, assume it's just a folder with no readable content
+                        hasContent = false;
+                    }
+
+                    result.push(new ProjectItem(
+                        compacted.label,
+                        compacted.path,
+                        hasContent ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
+                        true
+                    ));
+                } else {
+                    result.push(new ProjectItem(item, fullPath, vscode.TreeItemCollapsibleState.None, false));
+                }
+            } catch (e) {
+                // If we can't stat a specific file/folder, just skip it
+                console.error(`[ERROR] Failed to stat ${fullPath}:`, e);
             }
         }
         return result.sort((a, b) => (b.isDirectory ? 1 : 0) - (a.isDirectory ? 1 : 0) || a.label.localeCompare(b.label));
     }
 
     private getCompactedFolder(dirPath: string): { path: string; label: string } {
-        const items = fs.readdirSync(dirPath);
-        const subDirs = items.filter(i => fs.lstatSync(path.join(dirPath, i)).isDirectory());
-        const files = items.filter(i => !fs.lstatSync(path.join(dirPath, i)).isDirectory());
+        try {
+            const items = fs.readdirSync(dirPath);
+            const subDirs = items.filter(i => {
+                try {
+                    return fs.lstatSync(path.join(dirPath, i)).isDirectory();
+                } catch {
+                    return false;
+                }
+            });
+            const files = items.filter(i => {
+                try {
+                    return !fs.lstatSync(path.join(dirPath, i)).isDirectory();
+                } catch {
+                    return false;
+                }
+            });
 
-        if (subDirs.length === 1 && files.length === 0) {
-            const inner = this.getCompactedFolder(path.join(dirPath, subDirs[0]));
-            return { path: inner.path, label: path.basename(dirPath) + "." + inner.label };
+            if (subDirs.length === 1 && files.length === 0) {
+                const inner = this.getCompactedFolder(path.join(dirPath, subDirs[0]));
+                return { path: inner.path, label: path.basename(dirPath) + "." + inner.label };
+            }
+        } catch (e) {
+            // If readdirSync fails, we return the folder as non-compactable
+            console.error(`[ERROR] Failed to compact folder ${dirPath}:`, e);
         }
         return { path: dirPath, label: path.basename(dirPath) };
     }
