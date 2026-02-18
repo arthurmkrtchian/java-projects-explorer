@@ -5,6 +5,7 @@ import * as fs from 'fs';
 export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vscode.TreeDragAndDropController<ProjectItem> {
     private _onDidChangeTreeData = new vscode.EventEmitter<ProjectItem | undefined | void>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+    private watcher?: vscode.FileSystemWatcher;
 
     // Drag and Drop MIME types
     // VS Code internally uses lowercase, but we'll support both to be safe given the View ID "javaDotsExplorer"
@@ -20,7 +21,29 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
     ];
 
     constructor(private workspaceRoot: string) {
-        console.log('[INIT] ProjectProvider created');
+        this.setupWatcher();
+    }
+
+    private setupWatcher(): void {
+        if (!this.workspaceRoot) {
+            return;
+        }
+
+        // Create a watcher for the workspace root
+        this.watcher = vscode.workspace.createFileSystemWatcher(
+            new vscode.RelativePattern(this.workspaceRoot, '**/*')
+        );
+
+        // Refresh on any change
+        this.watcher.onDidCreate(() => this.refresh());
+        this.watcher.onDidChange(() => this.refresh());
+        this.watcher.onDidDelete(() => this.refresh());
+    }
+
+    dispose() {
+        if (this.watcher) {
+            this.watcher.dispose();
+        }
     }
 
     refresh(): void { this._onDidChangeTreeData.fire(); }
@@ -84,7 +107,6 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
         try {
             items = fs.readdirSync(currentPath);
         } catch (e) {
-            console.error(`[ERROR] Failed to read directory ${currentPath}:`, e);
             return [];
         }
 
@@ -116,7 +138,6 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
                 }
             } catch (e) {
                 // If we can't stat a specific file/folder, just skip it
-                console.error(`[ERROR] Failed to stat ${fullPath}:`, e);
             }
         }
         return result.sort((a, b) => (b.isDirectory ? 1 : 0) - (a.isDirectory ? 1 : 0) || a.label.localeCompare(b.label));
@@ -146,13 +167,11 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
             }
         } catch (e) {
             // If readdirSync fails, we return the folder as non-compactable
-            console.error(`[ERROR] Failed to compact folder ${dirPath}:`, e);
         }
         return { path: dirPath, label: path.basename(dirPath) };
     }
 
     public async handleDrag(source: readonly ProjectItem[], dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
-        console.log('[DRAG] handleDrag called with', source.length, 'items');
 
         // Set both specific MIME types to be safe
         const item = new vscode.DataTransferItem(source);
@@ -167,7 +186,6 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
     }
 
     public async handleDrop(target: ProjectItem | undefined, dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
-        console.log('[DROP] handleDrop called');
         if (token.isCancellationRequested) { return; }
 
         // Try getting internal items (check both keys)
@@ -209,7 +227,6 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
                             this.moveFile(sourcePath, destPath);
                         }
                     } catch (e) {
-                        console.error('Error parsing URI:', line, e);
                     }
                 }
             }

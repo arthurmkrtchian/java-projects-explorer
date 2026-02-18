@@ -57,6 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(
         treeView,
+        projectProvider,
         // СОЗДАНИЕ (9 команд)
         vscode.commands.registerCommand('java-projects-explorer.createClass', n => createItem(n, false, 'Class')),
         vscode.commands.registerCommand('java-projects-explorer.createInterface', n => createItem(n, false, 'Interface')),
