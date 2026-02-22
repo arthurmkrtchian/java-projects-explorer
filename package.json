@@ -2,7 +2,7 @@
   "name": "java-projects-explorer",
   "displayName": "Java Explorer",
   "description": "A lightweight Java project explorer with IntelliJ-like compact folder view, auto-reveal, and quick Java file creation.",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "publisher": "ArthurMkrtchian",
   "author": "Mkrtchian Arthur",
   "license": "MIT",
@@ -146,32 +146,47 @@
         "command": "java-projects-explorer.revealCurrentFile",
         "title": "Select Opened File",
         "icon": "$(target)"
+      },
+      {
+        "command": "java-projects-explorer.undo",
+        "title": "Undo",
+        "icon": "$(discard)"
       }
     ],
     "keybindings": [
       {
         "command": "java-projects-explorer.copy",
         "key": "ctrl+c",
+        "mac": "cmd+c",
         "when": "focusedView == javaProjectsExplorer && !inputFocus"
       },
       {
         "command": "java-projects-explorer.cut",
         "key": "ctrl+x",
+        "mac": "cmd+x",
         "when": "focusedView == javaProjectsExplorer && !inputFocus"
       },
       {
         "command": "java-projects-explorer.paste",
         "key": "ctrl+v",
+        "mac": "cmd+v",
         "when": "focusedView == javaProjectsExplorer && !inputFocus"
       },
       {
         "command": "java-projects-explorer.deleteItem",
         "key": "delete",
+        "mac": "cmd+backspace",
         "when": "focusedView == javaProjectsExplorer && !inputFocus"
       },
       {
         "command": "java-projects-explorer.rename",
         "key": "f2",
+        "when": "focusedView == javaProjectsExplorer && !inputFocus"
+      },
+      {
+        "command": "java-projects-explorer.undo",
+        "key": "ctrl+z",
+        "mac": "cmd+z",
         "when": "focusedView == javaProjectsExplorer && !inputFocus"
       }
     ],
@@ -211,6 +226,11 @@
           "command": "java-projects-explorer.deleteItem",
           "when": "view == javaProjectsExplorer && viewItem != rootFolder",
           "group": "2_edit@6"
+        },
+        {
+          "command": "java-projects-explorer.undo",
+          "when": "view == javaProjectsExplorer",
+          "group": "2_edit@7"
         },
         {
           "command": "java-projects-explorer.openTerminal",

@@ -22,6 +22,10 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 1.0.6
+- **Robust Undo Mechanics**: Full global tracking of `Cut`, `Copy`, `Paste`, `Delete`, and `Rename` operations, ensuring seamless, focus-agnostic `Ctrl+Z` (or `Cmd+Z`) actions.
+- **Native macOS Shortcuts**: Fully mapped native system shortcuts alongside standard ones.
+
 ### 1.0.5
 - **Clean UI**: Automatically hide `.java` extensions in the tree view.
 

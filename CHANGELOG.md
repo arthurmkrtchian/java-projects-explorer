@@ -5,6 +5,12 @@ All notable changes to the "java-projects-explorer" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.0.6] - 2026-02-22
+
+- **Robust Undo System**: Implemented a standalone custom undo tracker ensuring completely reliable revert operations for Create, Rename, Delete, Cut, and Copy actions regardless of editor focus.
+- Introduced native OS shortcuts logic (e.g. `Cmd+Z`, `Cmd+C`, `Cmd+Backspace`) for macOS.
+- Removed legacy test unit files.
+
 ## [1.0.5] - 2026-02-22
 
 - Cleaner UI: Automatically hide `.java` extensions in the tree view for a more professional look.

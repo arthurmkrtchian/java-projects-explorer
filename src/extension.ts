@@ -6,6 +6,28 @@ import { ProjectProvider, ProjectItem } from './projectProvider';
 let clipboardSourcePath: string | undefined;
 let isCutOperation: boolean = false;
 
+// Custom Undo Stack
+interface UndoOperation {
+    type: 'create' | 'rename' | 'delete' | 'copy' | 'cut';
+    sourcePath?: string;
+    destPath?: string;
+    content?: Uint8Array;
+}
+let undoStack: UndoOperation[] = [];
+
+async function buildCopyEdit(sourcePath: string, destPath: string, wsEdit: vscode.WorkspaceEdit) {
+    const stat = fs.lstatSync(sourcePath);
+    if (stat.isDirectory()) {
+        const items = fs.readdirSync(sourcePath);
+        for (const item of items) {
+            await buildCopyEdit(path.join(sourcePath, item), path.join(destPath, item), wsEdit);
+        }
+    } else {
+        const content = await vscode.workspace.fs.readFile(vscode.Uri.file(sourcePath));
+        wsEdit.createFile(vscode.Uri.file(destPath), { contents: content, ignoreIfExists: true }, { label: "Copy File", needsConfirmation: false });
+    }
+}
+
 export function activate(context: vscode.ExtensionContext) {
     const rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath || "";
     const projectProvider = new ProjectProvider(rootPath);
@@ -41,23 +63,60 @@ export function activate(context: vscode.ExtensionContext) {
         try {
             if (isFolder) {
                 fs.mkdirSync(newPath, { recursive: true });
+                projectProvider.refresh();
             } else {
+                const uri = vscode.Uri.file(newPath);
+                const wsEdit = new vscode.WorkspaceEdit();
+                wsEdit.createFile(uri, { ignoreIfExists: true }, { label: "Create File", needsConfirmation: false });
+
                 const pkgMatch = folderPath.match(/src[\/\\]main[\/\\]java[\/\\](.*)/);
                 const pkg = pkgMatch ? pkgMatch[1].replace(/[\/\\]/g, '.') : '';
                 let content = pkg ? `package ${pkg};\n\n` : '';
                 if (annotation) { content += `${annotation}\n`; }
                 const keyword = type === 'Interface' ? 'interface' : type === 'Enum' ? 'enum' : 'class';
                 content += `public ${keyword} ${name} {\n\n}`;
-                fs.writeFileSync(newPath, content);
-                vscode.commands.executeCommand('vscode.open', vscode.Uri.file(newPath));
+
+                wsEdit.insert(uri, new vscode.Position(0, 0), content);
+                await vscode.workspace.applyEdit(wsEdit);
+                vscode.commands.executeCommand('vscode.open', uri);
+                projectProvider.refresh();
             }
-            projectProvider.refresh();
         } catch (err: any) { vscode.window.showErrorMessage(err.message); }
     };
 
     context.subscriptions.push(
         treeView,
         projectProvider,
+        // UNDO COMMAND
+        vscode.commands.registerCommand('java-projects-explorer.undo', async () => {
+            const operation = undoStack.pop();
+            if (!operation) {
+                vscode.window.setStatusBarMessage("Nothing to undo", 2000);
+                return;
+            }
+
+            try {
+                const wsEdit = new vscode.WorkspaceEdit();
+                if (operation.type === 'create' && operation.destPath) {
+                    wsEdit.deleteFile(vscode.Uri.file(operation.destPath), { recursive: true, ignoreIfNotExists: true });
+                } else if (operation.type === 'delete' && operation.destPath && operation.content) {
+                    wsEdit.createFile(vscode.Uri.file(operation.destPath), { contents: operation.content, ignoreIfExists: false });
+                } else if (operation.type === 'rename' && operation.sourcePath && operation.destPath) {
+                    wsEdit.renameFile(vscode.Uri.file(operation.destPath), vscode.Uri.file(operation.sourcePath), { overwrite: true });
+                } else if (operation.type === 'copy' && operation.destPath) {
+                    wsEdit.deleteFile(vscode.Uri.file(operation.destPath), { recursive: true, ignoreIfNotExists: true });
+                } else if (operation.type === 'cut' && operation.sourcePath && operation.destPath) {
+                    // Revert by moving the file back
+                    wsEdit.renameFile(vscode.Uri.file(operation.destPath), vscode.Uri.file(operation.sourcePath), { overwrite: true });
+                }
+
+                await vscode.workspace.applyEdit(wsEdit);
+                vscode.window.setStatusBarMessage(`Undo: ${operation.type}`, 2000);
+                setTimeout(() => projectProvider.refresh(), 100);
+            } catch (err: any) {
+                vscode.window.showErrorMessage(`Undo failed: ${err.message}`);
+            }
+        }),
         // СОЗДАНИЕ (9 команд)
         vscode.commands.registerCommand('java-projects-explorer.createClass', n => createItem(n, false, 'Class')),
         vscode.commands.registerCommand('java-projects-explorer.createInterface', n => createItem(n, false, 'Interface')),
@@ -119,13 +178,18 @@ export function activate(context: vscode.ExtensionContext) {
 
             const destPath = path.join(destDir, path.basename(sourcePath));
             try {
+                const wsEdit = new vscode.WorkspaceEdit();
                 if (performCut) {
-                    fs.renameSync(sourcePath, destPath);
+                    await buildCopyEdit(sourcePath, destPath, wsEdit);
+                    wsEdit.deleteFile(vscode.Uri.file(sourcePath), { recursive: true, ignoreIfNotExists: true }, { label: "Cut File", needsConfirmation: false });
                     clipboardSourcePath = undefined;
                     isCutOperation = false;
+                    undoStack.push({ type: 'cut', sourcePath: sourcePath, destPath: destPath });
                 } else {
-                    fs.cpSync(sourcePath, destPath, { recursive: true });
+                    await buildCopyEdit(sourcePath, destPath, wsEdit);
+                    undoStack.push({ type: 'copy', destPath: destPath });
                 }
+                await vscode.workspace.applyEdit(wsEdit);
                 projectProvider.refresh();
             } catch (e: any) { vscode.window.showErrorMessage(e.message); }
         }),
@@ -134,7 +198,11 @@ export function activate(context: vscode.ExtensionContext) {
             if (!target) { return; }
             const newName = await vscode.window.showInputBox({ value: path.basename(target.fsPath) });
             if (newName) {
-                fs.renameSync(target.fsPath, path.join(path.dirname(target.fsPath), newName));
+                const wsEdit = new vscode.WorkspaceEdit();
+                const destPath = path.join(path.dirname(target.fsPath), newName);
+                wsEdit.renameFile(vscode.Uri.file(target.fsPath), vscode.Uri.file(destPath), { overwrite: false }, { label: "Rename File", needsConfirmation: false });
+                await vscode.workspace.applyEdit(wsEdit);
+                undoStack.push({ type: 'rename', sourcePath: target.fsPath, destPath: destPath });
                 projectProvider.refresh();
             }
         }),
@@ -150,7 +218,13 @@ export function activate(context: vscode.ExtensionContext) {
 
             const confirm = await vscode.window.showWarningMessage(`Delete ${target.label}?`, { modal: true }, 'Yes');
             if (confirm === 'Yes') {
-                fs.rmSync(target.fsPath, { recursive: true, force: true });
+                const content = !target.isDirectory ? await vscode.workspace.fs.readFile(vscode.Uri.file(target.fsPath)) : undefined;
+
+                const wsEdit = new vscode.WorkspaceEdit();
+                wsEdit.deleteFile(vscode.Uri.file(target.fsPath), { recursive: true, ignoreIfNotExists: true }, { label: "Delete", needsConfirmation: false });
+                await vscode.workspace.applyEdit(wsEdit);
+
+                undoStack.push({ type: 'delete', destPath: target.fsPath, content: content });
                 projectProvider.refresh();
             }
         }),
