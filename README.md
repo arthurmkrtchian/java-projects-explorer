@@ -21,6 +21,10 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 1.0.4
+
+- Small documentation updates and final adjustments.
+
 ### 1.0.3
 
 - **Enhanced Java Icons**: Specific icons for classes, interfaces, abstract classes, and enums, determined by content analysis.

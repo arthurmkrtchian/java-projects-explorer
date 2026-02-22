@@ -5,6 +5,10 @@ All notable changes to the "java-projects-explorer" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.0.4] - 2026-02-22
+
+- Final documentation refinements and verification of Java icon logic.
+
 ## [1.0.3] - 2026-02-22
 
 - Added specific icons for Java Packages, Classes, Interfaces, Abstract Classes, and Enums.

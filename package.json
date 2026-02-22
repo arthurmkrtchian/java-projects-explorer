@@ -2,7 +2,7 @@
   "name": "java-projects-explorer",
   "displayName": "Java Explorer",
   "description": "A lightweight Java project explorer with IntelliJ-like compact folder view, auto-reveal, and quick Java file creation.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "ArthurMkrtchian",
   "author": "Mkrtchian Arthur",
   "license": "MIT",
