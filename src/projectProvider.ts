@@ -144,7 +144,14 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
                 // If we can't stat a specific file/folder, just skip it
             }
         }
-        return result.sort((a, b) => (b.isDirectory ? 1 : 0) - (a.isDirectory ? 1 : 0) || a.label.localeCompare(b.label));
+        return result.sort((a, b) => {
+            if (a.isDirectory !== b.isDirectory) {
+                return b.isDirectory ? 1 : -1;
+            }
+            const aLabel = typeof a.label === 'string' ? a.label : (a.label?.label || '');
+            const bLabel = typeof b.label === 'string' ? b.label : (b.label?.label || '');
+            return aLabel.localeCompare(bLabel);
+        });
     }
 
     private getCompactedFolder(dirPath: string): { path: string; label: string } {
@@ -283,14 +290,18 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
 
 export class ProjectItem extends vscode.TreeItem {
     constructor(
-        public readonly label: string,
+        label: string,
         public readonly fsPath: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly isDirectory: boolean,
         public readonly isRoot: boolean = false,
         public readonly javaType?: string
     ) {
-        super(label, collapsibleState);
+        let displayLabel = label;
+        if (!isDirectory && label.endsWith('.java')) {
+            displayLabel = label.slice(0, -5);
+        }
+        super(displayLabel, collapsibleState);
         this.id = fsPath;
         this.resourceUri = vscode.Uri.file(fsPath);
         if (this.isDirectory) {

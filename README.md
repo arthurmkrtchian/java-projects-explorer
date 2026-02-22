@@ -5,6 +5,7 @@ A lightweight and efficient Java project explorer for Visual Studio Code, design
 ## Features
 
 - **Custom Java Icons**: Automatically detects and displays specific icons for Java Classes, Interfaces, Abstract Classes, and Enums based on file content analysis.
+- **Clean UI**: Automatically hides `.java` extensions in the tree view, similar to IntelliJ IDEA, providing a cleaner and more professional workspace.
 - **Git Integration**: Access Git commands (Commit, Push, Pull, Stage, etc.) directly from the explorer's context menu.
 - **Compact Folder View**: Automatically merges empty intermediate Java packages (e.g., `com.example.app`) into a single tree node for a cleaner workspace.
 - **Select Opened File (Reveal)**: Quickly locate and highlight the currently active editor file in the Java Explorer tree with a single click on the "target" icon.
@@ -20,6 +21,9 @@ This extension contributes the following settings:
 * `java-projects-explorer.autoReveal`: Automatically reveal the active file in the Java Explorer tree view (Default: `false`).
 
 ## Release Notes
+
+### 1.0.5
+- **Clean UI**: Automatically hide `.java` extensions in the tree view.
 
 ### 1.0.4
 
