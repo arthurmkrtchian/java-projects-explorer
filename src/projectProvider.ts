@@ -29,15 +29,28 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
             return;
         }
 
+        const wsFolder = vscode.workspace.workspaceFolders?.[0];
+        const patternScope = wsFolder || this.workspaceRoot;
+
         // Create a watcher for the workspace root
         this.watcher = vscode.workspace.createFileSystemWatcher(
-            new vscode.RelativePattern(this.workspaceRoot, '**/*')
+            new vscode.RelativePattern(patternScope, '**/*')
         );
 
         // Refresh on any change
-        this.watcher.onDidCreate(() => this.refresh());
-        this.watcher.onDidChange(() => this.refresh());
-        this.watcher.onDidDelete(() => this.refresh());
+        this.watcher.onDidCreate((uri) => {
+            // Ignore internal files getting triggered
+            if (uri.fsPath.includes('.git') || uri.fsPath.includes('node_modules')) { return; }
+            this.refresh();
+        });
+        this.watcher.onDidChange((uri) => {
+            if (uri.fsPath.includes('.git') || uri.fsPath.includes('node_modules')) { return; }
+            this.refresh();
+        });
+        this.watcher.onDidDelete((uri) => {
+            if (uri.fsPath.includes('.git') || uri.fsPath.includes('node_modules')) { return; }
+            this.refresh();
+        });
     }
 
     dispose() {

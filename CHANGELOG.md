@@ -5,6 +5,10 @@ All notable changes to the "java-projects-explorer" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.0.7] - 2026-02-22
+
+- **Hotfix:** Fixed a bug where creating or deleting files externally (via terminal, VS Code standard explorer, or OS explorer) would fail to auto-refresh the Java Projects Explorer view.
+
 ## [1.0.6] - 2026-02-22
 
 - **Robust Undo System**: Implemented a standalone custom undo tracker ensuring completely reliable revert operations for Create, Rename, Delete, Cut, and Copy actions regardless of editor focus.

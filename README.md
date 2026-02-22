@@ -22,6 +22,9 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 1.0.7
+- **Hotfix:** Fixed an issue where the Java Projects Explorer failed to automatically refresh when files were created or deleted via the terminal or OS file system.
+
 ### 1.0.6
 - **Robust Undo Mechanics**: Full global tracking of `Cut`, `Copy`, `Paste`, `Delete`, and `Rename` operations, ensuring seamless, focus-agnostic `Ctrl+Z` (or `Cmd+Z`) actions.
 - **Native macOS Shortcuts**: Fully mapped native system shortcuts alongside standard ones.
