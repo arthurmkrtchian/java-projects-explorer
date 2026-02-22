@@ -134,7 +134,11 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
                         true
                     ));
                 } else {
-                    result.push(new ProjectItem(item, fullPath, vscode.TreeItemCollapsibleState.None, false));
+                    let javaType: string | undefined;
+                    if (item.endsWith('.java')) {
+                        javaType = this.detectJavaFileType(fullPath);
+                    }
+                    result.push(new ProjectItem(item, fullPath, vscode.TreeItemCollapsibleState.None, false, false, javaType));
                 }
             } catch (e) {
                 // If we can't stat a specific file/folder, just skip it
@@ -169,6 +173,32 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
             // If readdirSync fails, we return the folder as non-compactable
         }
         return { path: dirPath, label: path.basename(dirPath) };
+    }
+
+    private detectJavaFileType(filePath: string): string | undefined {
+        try {
+            const content = fs.readFileSync(filePath, 'utf8');
+            // Remove comments and strings to avoid false positives
+            const cleanContent = content
+                .replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '')
+                .replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, '');
+
+            if (/\benum\b/.test(cleanContent)) {
+                return 'enum';
+            }
+            if (/\binterface\b/.test(cleanContent)) {
+                return 'interface';
+            }
+            if (/\babstract\s+class\b/.test(cleanContent)) {
+                return 'abstractClass';
+            }
+            if (/\bclass\b/.test(cleanContent)) {
+                return 'class';
+            }
+        } catch (e) {
+            // If we can't read the file, just return undefined
+        }
+        return undefined;
     }
 
     public async handleDrag(source: readonly ProjectItem[], dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
@@ -257,18 +287,31 @@ export class ProjectItem extends vscode.TreeItem {
         public readonly fsPath: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly isDirectory: boolean,
-        public readonly isRoot: boolean = false
+        public readonly isRoot: boolean = false,
+        public readonly javaType?: string
     ) {
         super(label, collapsibleState);
         this.id = fsPath;
         this.resourceUri = vscode.Uri.file(fsPath);
         if (this.isDirectory) {
             this.contextValue = this.isRoot ? 'rootFolder' : 'folder';
-            if (this.collapsibleState === vscode.TreeItemCollapsibleState.None) {
-                this.iconPath = vscode.ThemeIcon.Folder;
-            }
+            this.iconPath = {
+                light: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'icons', 'folder_dark.svg')),
+                dark: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'icons', 'folder_dark.svg'))
+            };
         } else {
             this.contextValue = 'file';
+            if (this.javaType) {
+                let iconName = 'class_dark.svg';
+                if (this.javaType === 'interface') { iconName = 'interface_dark.svg'; }
+                else if (this.javaType === 'enum') { iconName = 'enum_dark.svg'; }
+                else if (this.javaType === 'abstractClass') { iconName = 'classAbstract_dark.svg'; }
+
+                this.iconPath = {
+                    light: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'icons', iconName)),
+                    dark: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'icons', iconName))
+                };
+            }
             this.command = {
                 command: 'vscode.open',
                 title: "Open",

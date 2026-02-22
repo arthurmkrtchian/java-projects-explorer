@@ -5,6 +5,12 @@ All notable changes to the "java-projects-explorer" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.0.3] - 2026-02-22
+
+- Added specific icons for Java Packages, Classes, Interfaces, Abstract Classes, and Enums.
+- Implemented robust Java file type detection based on content analysis (stripping comments and strings).
+- Integrated Git commands into the tree view context menu.
+
 ## [1.0.2] - 2026-02-19
 
 - Added automatic file system monitoring (FileSystemWatcher) to keep the Java Projects Explorer tree view in sync with external changes.
