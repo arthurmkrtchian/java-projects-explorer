@@ -70,6 +70,11 @@
         "icon": "$(symbol-enum)"
       },
       {
+        "command": "java-projects-explorer.createRecord",
+        "title": "Record",
+        "icon": "$(symbol-class)"
+      },
+      {
         "command": "java-projects-explorer.createAnnotation",
         "title": "Annotation",
         "icon": "$(symbol-method)"
@@ -259,6 +264,10 @@
         },
         {
           "command": "java-projects-explorer.createEnum",
+          "group": "1_java"
+        },
+        {
+          "command": "java-projects-explorer.createRecord",
           "group": "1_java"
         },
         {

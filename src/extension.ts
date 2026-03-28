@@ -73,7 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
                 const pkg = pkgMatch ? pkgMatch[1].replace(/[\/\\]/g, '.') : '';
                 let content = pkg ? `package ${pkg};\n\n` : '';
                 if (annotation) { content += `${annotation}\n`; }
-                const keyword = type === 'Interface' ? 'interface' : type === 'Enum' ? 'enum' : 'class';
+                const keyword = type === 'Interface' ? 'interface' : type === 'Enum' ? 'enum' : type === 'Record' ? 'record' : 'class';
                 content += `public ${keyword} ${name} {\n\n}`;
 
                 wsEdit.insert(uri, new vscode.Position(0, 0), content);
@@ -121,6 +121,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('java-projects-explorer.createClass', n => createItem(n, false, 'Class')),
         vscode.commands.registerCommand('java-projects-explorer.createInterface', n => createItem(n, false, 'Interface')),
         vscode.commands.registerCommand('java-projects-explorer.createEnum', n => createItem(n, false, 'Enum')),
+        vscode.commands.registerCommand('java-projects-explorer.createRecord', n => createItem(n, false, 'Record')),
         vscode.commands.registerCommand('java-projects-explorer.createAnnotation', n => createItem(n, false, 'Annotation', '@interface')),
         vscode.commands.registerCommand('java-projects-explorer.createController', n => createItem(n, false, 'Controller', '@RestController')),
         vscode.commands.registerCommand('java-projects-explorer.createService', n => createItem(n, false, 'Service', '@Service')),
