@@ -203,6 +203,9 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
                 .replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '')
                 .replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, '');
 
+            if (/\brecord\b/.test(cleanContent)) {
+                return 'record';
+            }
             if (/\benum\b/.test(cleanContent)) {
                 return 'enum';
             }
@@ -320,20 +323,21 @@ export class ProjectItem extends vscode.TreeItem {
         if (this.isDirectory) {
             this.contextValue = this.isRoot ? 'rootFolder' : 'folder';
             this.iconPath = {
-                light: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'icons', 'folder_dark.svg')),
+                light: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'icons', 'folder.svg')),
                 dark: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'icons', 'folder_dark.svg'))
             };
         } else {
             this.contextValue = 'file';
             if (this.javaType) {
-                let iconName = 'class_dark.svg';
-                if (this.javaType === 'interface') { iconName = 'interface_dark.svg'; }
-                else if (this.javaType === 'enum') { iconName = 'enum_dark.svg'; }
-                else if (this.javaType === 'abstractClass') { iconName = 'classAbstract_dark.svg'; }
+                let baseIconName = 'class';
+                if (this.javaType === 'interface') { baseIconName = 'interface'; }
+                else if (this.javaType === 'enum') { baseIconName = 'enum'; }
+                else if (this.javaType === 'abstractClass') { baseIconName = 'classAbstract'; }
+                else if (this.javaType === 'record') { baseIconName = 'record'; }
 
                 this.iconPath = {
-                    light: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'icons', iconName)),
-                    dark: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'icons', iconName))
+                    light: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'icons', `${baseIconName}.svg`)),
+                    dark: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'icons', `${baseIconName}_dark.svg`))
                 };
             }
             this.command = {
