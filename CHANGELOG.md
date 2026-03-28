@@ -5,6 +5,11 @@ All notable changes to the "java-projects-explorer" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.0.8] - 2026-03-28
+
+- **Theme-Aware Icons**: Dynamically use specific SVG icons based on the user's active VS Code theme (Light or Dark).
+- **Quick Creation**: Added a "New Java Record" context menu option for quick scaffolding of `public record` files.
+
 ## [1.0.7] - 2026-02-22
 
 - **Hotfix:** Fixed a bug where creating or deleting files externally (via terminal, VS Code standard explorer, or OS explorer) would fail to auto-refresh the Java Projects Explorer view.

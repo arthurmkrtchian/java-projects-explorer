@@ -22,6 +22,10 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 1.0.8
+- **Theme-Aware Icons**: Dynamically use specific SVG icons based on the user's active VS Code theme (Light or Dark).
+- **Quick Creation**: Added a "New Java Record" context menu option for quick scaffolding of `public record` files.
+
 ### 1.0.7
 - **Hotfix:** Fixed an issue where the Java Projects Explorer failed to automatically refresh when files were created or deleted via the terminal or OS file system.
 
